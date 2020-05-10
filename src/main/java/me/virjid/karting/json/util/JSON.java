@@ -13,6 +13,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAccessor;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +28,10 @@ public class JSON {
 
     private static final JSONParser parser   = new JSONParser();
     private static final Tokenizer tokenizer = new Tokenizer();
+
+    // ----------------------------------------------
+    // json object or json array to string
+    // ----------------------------------------------
 
     @NotNull
     @Contract(pure = true)
@@ -163,11 +170,13 @@ public class JSON {
         return sb.toString();
     }
 
+    // ----------------------------------------------
+    // string to json object or json array
+    // ----------------------------------------------
     @NotNull
     public static JSONObject parseJSONObject(String source) {
         try {
             CharReader reader   = new CharReader(new StringReader(source));
-            Tokenizer tokenizer = new Tokenizer();
             TokenList tokenList = tokenizer.tokenize(reader);
             return parser.parseJSONObject(tokenList);
         } catch (IOException e) {
@@ -179,7 +188,6 @@ public class JSON {
     public static JSONArray parseJSONArray(String source) {
         try {
             CharReader reader   = new CharReader(new StringReader(source));
-            Tokenizer tokenizer = new Tokenizer();
             TokenList tokenList = tokenizer.tokenize(reader);
             return parser.parseJSONArray(tokenList);
         } catch (IOException e) {
@@ -188,64 +196,73 @@ public class JSON {
     }
 
 
-    private static void toJSONObject(Object obj, JSONObject model) {
+    // ----------------------------------------------
+    // any object to json object or json array
+    // ----------------------------------------------
+    public static JSONObject toJSONObject(Object obj) {
+        if (obj == null) return null;
 
-        if (isMap(obj)) {
-            Map<?, ?> map = (Map<?, ?>) obj;
-            for (Map.Entry<?, ?> entry : map.entrySet()) {
-                String key = entry.getKey().toString();
-                Object val = entry.getValue();
-
-                if (isNotJSONObject(val)) {
-                    model.put(key, val);
-                }
-
-                else if (isList(val)) {
-                    JSONArray array = new JSONArray();
-                    toJSONArray(val, array);
-                    model.put(key, array);
-                }
-
-                else {
-                    JSONObject subModel = new JSONObject();
-                    toJSONObject(val, subModel);
-                    subModel.put(key, subModel);
-                }
-            }
-            return;
+        if (ReflectUtil.isList(obj)) {
+            throw new JSONTypeException("Type of value is not JSONObject");
         }
 
-        try {
-            Field[] fields = obj.getClass().getDeclaredFields();
-            for(Field field : fields){
-                boolean accessible = field.isAccessible();
-                field.setAccessible(true);
+        JSONObject model = new JSONObject();
+        toJSONObject(obj, model);
 
-                String name   = field.getName();
-                Object value  = field.get(obj);
+        return model;
+    }
 
-                // 不用继续递归解析为JSON
-                if (isNotJSONObject(value)) {
-                    model.put(name, value);
-                }
+    public static JSONArray toJSONArray(Object obj) {
+        if (obj == null) return null;
 
-                // 列表
-                else if (isList(value)) {
-                    JSONArray array = new JSONArray();
-                    toJSONArray(value, array);
-                    model.put(name, array);
-                }
+        if (!(obj instanceof List) && !obj.getClass().isArray()) {
+            throw new JSONTypeException("Type of value is not JSONArray");
+        }
 
-                else {
-                    JSONObject subObject = new JSONObject();
-                    toJSONObject(value, subObject);
-                    model.put(name, subObject);
-                }
+        JSONArray array = new JSONArray();
+        toJSONArray(obj, array);
+        return array;
+    }
 
-                field.setAccessible(accessible);
+    private static void toJSONObject(Object obj, JSONObject model) {
+        if (!ReflectUtil.isMap(obj)) {
+            toJSONObject(ReflectUtil.objectToMap(obj), model);
+        } else {
+            toJSONObject((Map<?, ?>) obj, model);
+        }
+    }
+
+    private static void toJSONObject(@NotNull Map<?, ?> map, JSONObject model) {
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            String key = entry.getKey().toString();
+            Object val = entry.getValue();
+
+            // 处理JSON的基本类型
+            if (ReflectUtil.isNotJSONObject(val)) {
+                model.put(key, val);
             }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            // 处理JSON列表
+            else if (ReflectUtil.isList(val)) {
+                JSONArray array = new JSONArray();
+                toJSONArray(val, array);
+                model.put(key, array);
+            }
+            // 如果又是一个Map
+            else if (ReflectUtil.isMap(val)) {
+                JSONObject subModel = new JSONObject();
+                toJSONObject((Map<?, ?>) val, subModel);
+                model.put(key, subModel);
+            }
+            // 处理时间对象：LocalDateTime、LocalDate、LocalTime
+            else if (ReflectUtil.isDateTime(val)) {
+                model.put(key, StringUtil.dateTimeToString((TemporalAccessor) val));
+            }
+            // 处理其他对象
+            else {
+                JSONObject subModel = new JSONObject();
+                toJSONObject(ReflectUtil.objectToMap(val), subModel);
+                model.put(key, subModel);
+            }
         }
     }
 
@@ -322,59 +339,5 @@ public class JSON {
                 array.add(model);
             }
         }
-    }
-
-
-    public static boolean isWrapper(Class<?> type) {
-        return type == Integer.class || type == Long.class || type == Boolean.class
-                || type == Double.class || type == Float.class
-                || type == Character.class || type == Byte.class
-                || type == Short.class;
-    }
-
-    public static boolean isNotJSONObject(Object val) {
-        if (val == null) return true;
-
-        Class<?> type = val.getClass();
-        return type.isPrimitive() || isWrapper(type) || type == String.class;
-    }
-
-    public static boolean isList(Object obj) {
-        if (obj == null) return false;
-
-        Class<?> type = obj.getClass();
-
-        return obj instanceof List || type.isArray();
-    }
-
-    public static boolean isMap(Object obj) {
-        if (obj == null) return false;
-
-        return obj instanceof Map;
-    }
-
-    public static JSONObject toJSONObject(Object obj) {
-        if (obj == null) return null;
-
-        if (obj instanceof List || obj.getClass().isArray()) {
-            throw new JSONTypeException("Type of value is not JSONObject");
-        }
-
-        JSONObject model = new JSONObject();
-
-        toJSONObject(obj, model);
-        return model;
-    }
-
-    public static JSONArray toJSONArray(Object obj) {
-        if (obj == null) return null;
-
-        if (!(obj instanceof List) && !obj.getClass().isArray()) {
-            throw new JSONTypeException("Type of value is not JSONArray");
-        }
-
-        JSONArray array = new JSONArray();
-        toJSONArray(obj, array);
-        return array;
     }
 }

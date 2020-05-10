@@ -1,3 +1,10 @@
+# idea
+.idea
+kartingjson.iml
+
+# target
+target
+
 # Compiled class file
 *.class
 
