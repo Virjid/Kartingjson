@@ -12,12 +12,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Virjid
@@ -58,60 +56,45 @@ public class JSON {
     @NotNull
     @Contract(pure = true)
     private static String toJSONString(@NotNull JSONObject model, int depth, final int indent) {
+        // 以左大括号作为起始
         StringBuilder sb = new StringBuilder();
-        sb.append(getIndentString(depth, indent));
-        sb.append("{");
+        sb.append('{');
         depth++;
 
-        List<Map.Entry<String, Object>> keyValues = model.getAllKeyValue();
-        int size = keyValues.size();
-        for (int i = 0; i < size; i++) {
-            Map.Entry<String, Object> keyValue = keyValues.get(i);
+        // 计算缩进
+        String indentStr = calcIndent(depth, indent);
 
-            String key = keyValue.getKey();
-            Object value = keyValue.getValue();
+        Set<Map.Entry<String, Object>> entries = model.entrySet();
+        final int size = entries.size();
+        int i = 0;
+        for (Map.Entry<String, Object> entry : model.entrySet()) {
+            String key = entry.getKey();
+            Object val = entry.getValue();
 
-            if (indent != 0) {
-                sb.append("\n").append(getIndentString(depth, indent))
-                        .append("\"").append(key).append("\"").append(": ");
-                if (value instanceof JSONObject) {
-                    sb.append("\n");
-                    sb.append(toJSONString((JSONObject) value, depth, indent));
-                } else if (value instanceof JSONArray){
-                    sb.append("\n");
-                    sb.append(toJSONString((JSONArray) value, depth, indent));
-                } else if (value instanceof String) {
-                    sb.append("\"");
-                    sb.append(value);
-                    sb.append("\"");
-                } else {
-                    sb.append(value);
-                }
+            // <indent>"<key>":<space>
+            if (indent > 0) sb.append('\n');
+            sb.append(indentStr).append('"').append(key).append("\":");
+            if (indent > 0) sb.append(' ');
+
+            if (val instanceof JSONObject) {
+                sb.append(toJSONString((JSONObject) val, depth, indent));
+            } else if (val instanceof JSONArray) {
+                sb.append(toJSONString((JSONArray) val, depth, indent));
+            } else if (val instanceof String) {
+                sb.append('"').append(val).append('"');
             } else {
-                sb.append("\"").append(key).append("\":");
-                if (value instanceof JSONObject) {
-                    sb.append(toJSONString((JSONObject) value, depth, indent));
-                } else if (value instanceof JSONArray){
-                    sb.append(toJSONString((JSONArray) value, depth, indent));
-                } else if (value instanceof String) {
-                    sb.append("\"");
-                    sb.append(value);
-                    sb.append("\"");
-                } else {
-                    sb.append(value);
-                }
+                sb.append(val);
             }
-            if (i < size - 1) {
-                sb.append(",");
-            }
+
+            if (i < size - 1) sb.append(',');
+            else if (indent > 0) sb.append('\n');
+
+            i++;
         }
 
+        // 结束解析
         depth--;
-        if (indent != 0) {
-            sb.append("\n");
-            sb.append(getIndentString(depth, indent));
-        }
-        sb.append("}");
+        sb.append(calcIndent(depth, indent)).append('}');
 
         return sb.toString();
     }
@@ -119,50 +102,39 @@ public class JSON {
     @NotNull
     private static String toJSONString(@NotNull JSONArray array, int depth, final int indent) {
         StringBuilder sb = new StringBuilder();
-        if (indent != 0) {
-            sb.append(getIndentString(depth, indent));
-        }
-        sb.append("[");
+        sb.append('[');
         depth++;
+        String indentStr = calcIndent(depth, indent);
 
-        int size = array.size();
-        for (int i = 0; i < size; i++) {
-            if (indent != 0) {
-                sb.append("\n");
-            }
+        for (int i = 0, size = array.size(); i < size; i++) {
 
-            Object ele = array.get(i);
-            if (ele instanceof JSONObject) {
-                sb.append(toJSONString((JSONObject) ele, depth, indent));
-            } else if (ele instanceof JSONArray) {
-                sb.append(toJSONString((JSONArray) ele, depth, indent));
-            } else if (ele instanceof String) {
-                sb.append(getIndentString(depth, indent));
-                sb.append("\"");
-                sb.append(ele);
-                sb.append("\"");
+            if (indent > 0) sb.append('\n');
+
+            Object item = array.get(i);
+            if (item instanceof JSONObject) {
+                sb.append(toJSONString((JSONObject) item, depth, indent));
+            } else if (item instanceof JSONArray) {
+                sb.append(toJSONString((JSONArray) item, depth, indent));
+            } else if (item instanceof String) {
+                sb.append(indentStr).append('"').append(item).append('"');
             } else {
-                sb.append(getIndentString(depth, indent));
-                sb.append(ele);
+                sb.append(indentStr).append(item);
             }
 
-            if (i < size - 1) {
-                sb.append(",");
-            }
+            if (i < size - 1) sb.append(',');
+            else if (indent > 0) sb.append('\n');
         }
 
         depth--;
-        if (indent != 0) {
-            sb.append("\n");
-            sb.append(getIndentString(depth, indent));
-        }
-        sb.append("]");
+        sb.append(calcIndent(depth, indent)).append(']');
 
         return sb.toString();
     }
 
     @NotNull
-    private static String getIndentString(int depth, int indent) {
+    private static String calcIndent(int depth, int indent) {
+        if (indent <= 0) return "";
+
         StringBuilder sb = new StringBuilder();
         for (int i = 0, size = depth * indent; i < size; i++) {
             sb.append(SPACE_CHAR);
@@ -208,14 +180,13 @@ public class JSON {
 
         JSONObject model = new JSONObject();
         toJSONObject(obj, model);
-
         return model;
     }
 
     public static JSONArray toJSONArray(Object obj) {
         if (obj == null) return null;
 
-        if (!(obj instanceof List) && !obj.getClass().isArray()) {
+        if (!ReflectUtil.isList(obj)) {
             throw new JSONTypeException("Type of value is not JSONArray");
         }
 
@@ -329,14 +300,23 @@ public class JSON {
             List<?> list = (List<?>) obj;
 
             for (Object item : list) {
-                if (item == null) {
-                    array.add(null);
-                    continue;
+                if (ReflectUtil.isNotJSONObject(item)) {
+                    array.add(item);
                 }
-
-                JSONObject model = new JSONObject();
-                toJSONObject(item, model);
-                array.add(model);
+                else if (ReflectUtil.isList(item)) {
+                    JSONArray subArray = new JSONArray();
+                    toJSONArray(item, subArray);
+                    array.add(subArray);
+                }
+                // 处理时间对象：LocalDateTime、LocalDate、LocalTime
+                else if (ReflectUtil.isDateTime(item)) {
+                    array.add(StringUtil.dateTimeToString((TemporalAccessor) item));
+                }
+                else {
+                    JSONObject model = new JSONObject();
+                    toJSONObject(item, model);
+                    array.add(model);
+                }
             }
         }
     }

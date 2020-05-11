@@ -18,30 +18,44 @@ import java.net.URL;
 public class KartingjsonTest {
     private static String array_json;
     private static String object_json;
+    private static String revise_json;
 
     @BeforeAll
     public static void readData() {
-        array_json  = readResource("array.json");
-        object_json = readResource("object.json");
+        array_json   = readResource("array.json");
+        object_json  = readResource("object.json");
+        revise_json  = readResource("revise.json");
     }
 
+    // 简单地修正JSON字符串
+    @Test
+    public void reviseJson() {
+        JSONObject obj = JSON.parseJSONObject(revise_json);
+
+        System.out.println(obj.toString(2));
+    }
+
+
+    // 解析JSON对象字符串
+    @Test
+    public void parseJSONObjectString() {
+        JSONObject obj = JSON.parseJSONObject(object_json);
+        System.out.println(obj.toString(2));
+    }
+
+    // 解析JSON数组字符串
+    @Test
+    public void parseJSONArrayString() {
+        JSONArray array = JSON.parseJSONArray(array_json);
+        System.out.println(array.toString(2));
+    }
+
+    // Object对象转JSONObject对象
     @Test
     public void objectToJSONObject() {
         TestBlogPostEntity post = new TestBlogPostEntity();
         JSONObject obj = JSON.toJSONObject(post);
-        System.out.println(obj.toString(4));
-    }
-
-    @Test
-    public void parseJSONObjectString() {
-        JSONObject obj = JSON.parseJSONObject(object_json);
-        Assert.assertSame(obj.toString(2), object_json);
-    }
-
-    @Test
-    public void parseJSONArrayString() {
-        JSONArray array = JSON.parseJSONArray(array_json);
-        Assert.assertSame(array.toString(2), array_json);
+        System.out.println(obj.toString(2));
     }
 
 

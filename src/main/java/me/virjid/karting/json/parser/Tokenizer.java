@@ -59,7 +59,7 @@ public class Tokenizer {
         if (c == '-' || c == '.' || Character.isDigit(c))
             return readNumber();
 
-        throw new JSONParseException("Illegal character");
+        throw new JSONParseException("Illegal character => " + c);
     }
 
     @NotNull
