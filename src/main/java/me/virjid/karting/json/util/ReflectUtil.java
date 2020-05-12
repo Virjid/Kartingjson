@@ -7,9 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.time.temporal.TemporalAccessor;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Virjid
@@ -108,5 +108,67 @@ public class ReflectUtil {
         }
 
         return map;
+    }
+
+
+
+    public static List<?> asList(Object obj) {
+        if (obj instanceof List) return (List<?>) obj;
+
+        if (obj.getClass().isArray()) {
+            Class<?> type = obj.getClass().getComponentType();
+            if (!type.isPrimitive()) {
+                return Arrays.asList((Object[]) obj);
+            }
+
+            if (type == int.class) {
+                return Arrays.stream((int[]) obj).boxed().collect(Collectors.toList());
+            }
+
+            if (type == boolean.class) {
+                boolean[] booleans = (boolean[]) obj;
+                return IntStream.range(0, booleans.length)
+                        .mapToObj(idx -> booleans[idx])
+                        .collect(Collectors.toList());
+            }
+
+            if (type == double.class) {
+                return Arrays.stream((double[]) obj).boxed().collect(Collectors.toList());
+            }
+
+            if (type == float.class) {
+                float[] floats = (float[]) obj;
+                return IntStream.range(0, floats.length)
+                        .mapToObj(idx -> floats[idx])
+                        .collect(Collectors.toList());
+            }
+
+            if (type == long.class) {
+                return Arrays.stream((long[]) obj).boxed().collect(Collectors.toList());
+            }
+
+            if (type == char.class) {
+                char[] chars = (char[]) obj;
+                return IntStream.range(0, chars.length)
+                        .mapToObj(idx -> chars[idx])
+                        .collect(Collectors.toList());
+            }
+
+            if (type == byte.class) {
+                byte[] bytes = (byte[]) obj;
+                return IntStream.range(0, bytes.length)
+                        .mapToObj(idx -> bytes[idx])
+                        .collect(Collectors.toList());
+            }
+
+            if (type == short.class) {
+                short[] shorts = (short[]) obj;
+                return IntStream.range(0, shorts.length)
+                        .mapToObj(idx -> shorts[idx])
+                        .collect(Collectors.toList());
+            }
+        }
+
+        return Collections.singletonList(obj);
     }
 }

@@ -37,4 +37,12 @@ public class TestBlogAuthorEntity implements Serializable {
         friends.add("Jack");
         friends.add("Peter");
     }
+
+    private LocalDateTime[] everySignInTime = new LocalDateTime[3];
+
+    {
+        everySignInTime[0] = LocalDateTime.now();
+        everySignInTime[1] = LocalDateTime.now();
+        everySignInTime[2] = LocalDateTime.now();
+    }
 }

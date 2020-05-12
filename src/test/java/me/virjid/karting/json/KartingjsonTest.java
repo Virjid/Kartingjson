@@ -5,7 +5,6 @@ import me.virjid.karting.json.model.JSONArray;
 import me.virjid.karting.json.model.JSONObject;
 import me.virjid.karting.json.util.JSON;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -22,9 +21,9 @@ public class KartingjsonTest {
 
     @BeforeAll
     public static void readData() {
-        array_json   = readResource("array.json");
-        object_json  = readResource("object.json");
-        revise_json  = readResource("revise.json");
+        array_json  = readResource("array.json");
+        object_json = readResource("object.json");
+        revise_json = readResource("revise.json");
     }
 
     // 简单地修正JSON字符串
@@ -70,7 +69,6 @@ public class KartingjsonTest {
             reader.lines().forEach(data::append);
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        return data.toString();
+        }return data.toString();
     }
 }

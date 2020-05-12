@@ -20,9 +20,5 @@ public enum TokenType {
         this.code = code;
     }
 
-    private int code;
-
-    public int code() {
-        return code;
-    }
+    public final int code;
 }

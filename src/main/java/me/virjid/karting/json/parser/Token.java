@@ -4,6 +4,10 @@ package me.virjid.karting.json.parser;
  * @author Virjid
  */
 public class Token {
+
+    // ----------------------------------------
+    // 定义一些值是固定不变的Token
+    // ----------------------------------------
     public static final Token BEGIN_OBJECT_TOKEN = new Token(TokenType.BEGIN_OBJECT, "{");
     public static final Token END_OBJECT_TOKEN   = new Token(TokenType.END_OBJECT,   "}");
     public static final Token BEGIN_ARRAY_TOKEN  = new Token(TokenType.BEGIN_ARRAY,  "[");
@@ -16,10 +20,10 @@ public class Token {
     public static final Token END_DOCUMENT_TOKEN = new Token(TokenType.END_DOCUMENT, null);
 
 
-    private TokenType type;
-    private String value;
+    private final TokenType type;
+    private final String value;
 
-    public Token(TokenType type, String value) {
+    public Token(final TokenType type, final String value) {
         this.type  = type;
         this.value = value;
     }
@@ -27,24 +31,13 @@ public class Token {
     public TokenType type() {
         return type;
     }
-
-    public void type(TokenType type) {
-        this.type = type;
-    }
-
     public String value() {
         return value;
     }
 
-    public void value(String value) {
-        this.value = value;
-    }
 
     @Override
     public String toString() {
-        return "Token{" +
-                "type=" + type +
-                ", value='" + value + '\'' +
-                '}';
+        return "Token <" + type + ", " + value + ">;";
     }
 }

@@ -177,8 +177,8 @@ public class JSONParser {
         throw new JSONParseException("Parse error, invalid Token.");
     }
 
-    private void checkExpectToken(TokenType tokenType, int expectToken) {
-        if ((tokenType.code() & expectToken) == 0) {
+    private void checkExpectToken(@NotNull TokenType type, int expectToken) {
+        if ((type.code & expectToken) == 0) {
             throw new JSONParseException("Parse error, invalid Token.");
         }
     }

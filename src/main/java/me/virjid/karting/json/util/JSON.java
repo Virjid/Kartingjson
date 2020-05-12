@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.StringReader;
 import java.time.temporal.TemporalAccessor;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -238,85 +237,26 @@ public class JSON {
     }
 
     private static void toJSONArray(@NotNull Object obj, JSONArray array) {
-
-        if (obj.getClass().isArray()) {
-            Class<?> componentType = obj.getClass().getComponentType();
-
-            if (componentType == int.class) {
-                int[] objs = (int[]) obj;
-                for (int i : objs) {
-                    array.add(i);
-                }
-            } else if (componentType == long.class) {
-                long[] objs = (long[]) obj;
-                for (long i : objs) {
-                    array.add(i);
-                }
-            } else if (componentType == char.class) {
-                char[] objs = (char[]) obj;
-                for (char i : objs) {
-                    array.add(i);
-                }
-            } else if (componentType == short.class) {
-                short[] objs = (short[]) obj;
-                for (short i : objs) {
-                    array.add(i);
-                }
-            } else if (componentType == double.class) {
-                double[] objs = (double[]) obj;
-                for (double i : objs) {
-                    array.add(i);
-                }
-            } else if (componentType == float.class) {
-                float[] objs = (float[]) obj;
-                for (float i : objs) {
-                    array.add(i);
-                }
-            } else if (componentType == byte.class) {
-                byte[] objs = (byte[]) obj;
-                for (byte i : objs) {
-                    array.add(i);
-                }
-            } else if (componentType == boolean.class) {
-                boolean[] objs = (boolean[]) obj;
-                for (boolean i : objs) {
-                    array.add(i);
-                }
-            } else {
-                Object[] objs = (Object[]) obj;
-
-                for (Object o : objs) {
-                    if (o == null) {
-                        array.add(null);
-                        continue;
-                    }
-
-                    JSONObject model = new JSONObject();
-                    toJSONObject(o, model);
-                    array.add(model);
-                }
+        for (Object item : ReflectUtil.asList(obj)) {
+            if (ReflectUtil.isNotJSONObject(item)) {
+                array.add(item);
             }
-        } else {
-            List<?> list = (List<?>) obj;
 
-            for (Object item : list) {
-                if (ReflectUtil.isNotJSONObject(item)) {
-                    array.add(item);
-                }
-                else if (ReflectUtil.isList(item)) {
-                    JSONArray subArray = new JSONArray();
-                    toJSONArray(item, subArray);
-                    array.add(subArray);
-                }
-                // 处理时间对象：LocalDateTime、LocalDate、LocalTime
-                else if (ReflectUtil.isDateTime(item)) {
-                    array.add(StringUtil.dateTimeToString((TemporalAccessor) item));
-                }
-                else {
-                    JSONObject model = new JSONObject();
-                    toJSONObject(item, model);
-                    array.add(model);
-                }
+            else if (ReflectUtil.isList(item)) {
+                JSONArray subArray = new JSONArray();
+                toJSONArray(item, subArray);
+                array.add(subArray);
+            }
+
+            // 处理时间对象：LocalDateTime、LocalDate、LocalTime
+            else if (ReflectUtil.isDateTime(item)) {
+                array.add(StringUtil.dateTimeToString((TemporalAccessor) item));
+            }
+
+            else {
+                JSONObject model = new JSONObject();
+                toJSONObject(item, model);
+                array.add(model);
             }
         }
     }

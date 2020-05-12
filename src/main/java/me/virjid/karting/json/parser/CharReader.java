@@ -9,15 +9,19 @@ import java.io.Reader;
  * @author Virjid
  */
 public class CharReader {
+    public static final char EOF = (char) -1;
+
     private Reader reader;
     private char[] buffer;
 
-    // pos的取值区间为 [-1, size-1]，当pos为-1时表示一个字符都还未被读取。当pos为size-1时则表示已经全部读取完毕
+    /**
+     * pos的取值区间为 [-1, size-1].
+     * 当pos为-1时表示一个字符都还未被读取；当pos为size-1时则表示已经全部读取完毕
+     */
     private int pos;
     private int size;
 
     private static final int DEFAULT_BUFFER_SIZE = 1024;
-    public static final char EOF = (char) -1;
 
     public CharReader(Reader reader, int initSize) {
         this.reader = reader;
@@ -67,13 +71,13 @@ public class CharReader {
 
     // 滑过空白字符
     public void skipWhite() throws IOException {
-        char ch = next();
+        char c = next();
 
-        while (isWhiteSpace(ch)) {
-            ch = next();
+        while (Character.isWhitespace(c)) {
+            c = next();
         }
 
-        if (ch != EOF) back();
+        if (c != EOF) back();
     }
 
     // 回退一个字符位置
@@ -95,9 +99,5 @@ public class CharReader {
         }
 
         return true;
-    }
-
-    private boolean isWhiteSpace(char c) {
-        return (c == ' ' || c == '\t' || c == '\r' || c == '\n');
     }
 }

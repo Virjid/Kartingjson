@@ -21,7 +21,6 @@ public class Tokenizer {
     }
 
     private void tokenize(@NotNull TokenList tokens) throws IOException {
-        // 使用do-while处理空文件
         Token token;
         do {
             token = readToken();
@@ -206,7 +205,7 @@ public class Tokenizer {
                 sb.append(ch);
                 sb.append(readExp());
             } else {
-                if (ch != (char) -1) {
+                if (ch != CharReader.EOF) {
                     reader.back();
                 }
             }
@@ -232,7 +231,7 @@ public class Tokenizer {
                     ch = reader.next();
                 } while (Character.isDigit(ch));
 
-                if (ch != (char) -1) {    // 读取结束，不用回退
+                if (ch != CharReader.EOF) {
                     reader.back();
                 }
             } else {
