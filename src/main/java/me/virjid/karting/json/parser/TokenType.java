@@ -1,5 +1,8 @@
 package me.virjid.karting.json.parser;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author Virjid
  */
@@ -21,4 +24,15 @@ public enum TokenType {
     }
 
     public final int code;
+
+    @Contract(pure = true)
+    public static int calcCode(@NotNull TokenType... types) {
+        int result = 0;
+
+        for (TokenType type : types) {
+            result |= type.code;
+        }
+
+        return result;
+    }
 }

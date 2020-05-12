@@ -94,6 +94,8 @@ public class Tokenizer {
         }
     }
 
+    @NotNull
+    @Contract(" -> new")
     private Token readString() throws IOException {
         StringBuilder sb = new StringBuilder();
         while (true) {
@@ -134,6 +136,8 @@ public class Tokenizer {
         }
     }
 
+    @NotNull
+    @Contract(" -> new")
     private Token readNumber() throws IOException {
         // 开头字符
         char ch = reader.peek();
@@ -187,6 +191,7 @@ public class Tokenizer {
                 || ('A' <= ch && ch <= 'F'));
     }
 
+    @NotNull
     private String readFracAndExp() throws IOException {
         StringBuilder sb = new StringBuilder();
         char ch = reader.next();
@@ -219,6 +224,7 @@ public class Tokenizer {
         return sb.toString();
     }
 
+    @NotNull
     private String readExp() throws IOException {
         StringBuilder sb = new StringBuilder();
         char ch = reader.next();

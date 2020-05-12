@@ -5,29 +5,21 @@ import me.virjid.karting.json.model.JSONArray;
 import me.virjid.karting.json.model.JSONObject;
 import org.jetbrains.annotations.NotNull;
 
+import static me.virjid.karting.json.parser.TokenType.*;
+
 /**
  * @author Virjid
  */
 public class JSONParser {
-    private static final int BEGIN_OBJECT_TOKEN = 1;
-    private static final int END_OBJECT_TOKEN = 2;
-    private static final int BEGIN_ARRAY_TOKEN = 4;
-    private static final int END_ARRAY_TOKEN = 8;
-    private static final int NULL_TOKEN = 16;
-    private static final int NUMBER_TOKEN = 32;
-    private static final int STRING_TOKEN = 64;
-    private static final int BOOLEAN_TOKEN = 128;
-    private static final int SEP_COLON_TOKEN = 256;
-    private static final int SEP_COMMA_TOKEN = 512;
 
     @NotNull
     public JSONObject parseJSONObject(@NotNull TokenList tokens) {
-        if (tokens.next().type() != TokenType.BEGIN_OBJECT) {
+        if (tokens.next().type() != BEGIN_OBJECT) {
             throw new JSONParseException("Parse error, invalid Token.");
         }
 
         JSONObject JSONObject = new JSONObject();
-        int expectToken = STRING_TOKEN | END_OBJECT_TOKEN;
+        int expectToken = TokenType.calcCode(STRING, END_OBJECT);
         String key = null;
         Object value;
         while (tokens.hasMore()) {
@@ -39,7 +31,7 @@ public class JSONParser {
                     checkExpectToken(tokenType, expectToken);
                     tokens.back();
                     JSONObject.put(key, parseJSONObject(tokens));
-                    expectToken = SEP_COMMA_TOKEN | END_OBJECT_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case END_OBJECT:
                 case END_DOCUMENT:
@@ -49,12 +41,12 @@ public class JSONParser {
                     checkExpectToken(tokenType, expectToken);
                     tokens.back();
                     JSONObject.put(key, parseJSONArray(tokens));
-                    expectToken = SEP_COMMA_TOKEN | END_OBJECT_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case NULL:
                     checkExpectToken(tokenType, expectToken);
                     JSONObject.put(key, null);
-                    expectToken = SEP_COMMA_TOKEN | END_OBJECT_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case NUMBER:
                     checkExpectToken(tokenType, expectToken);
@@ -68,34 +60,34 @@ public class JSONParser {
                             JSONObject.put(key, (int) num);
                         }
                     }
-                    expectToken = SEP_COMMA_TOKEN | END_OBJECT_TOKEN;
+                    expectToken =TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case BOOLEAN:
                     checkExpectToken(tokenType, expectToken);
                     JSONObject.put(key, Boolean.valueOf(token.value()));
-                    expectToken = SEP_COMMA_TOKEN | END_OBJECT_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case STRING:
                     checkExpectToken(tokenType, expectToken);
                     Token preToken = tokens.peekPrevious();
 
-                    if (preToken.type() == TokenType.SEP_COLON) {
+                    if (preToken.type() == SEP_COLON) {
                         value = token.value();
                         JSONObject.put(key, value);
-                        expectToken = SEP_COMMA_TOKEN | END_OBJECT_TOKEN;
+                        expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     } else {
                         key = token.value();
-                        expectToken = SEP_COLON_TOKEN;
+                        expectToken = TokenType.calcCode(SEP_COLON);
                     }
                     break;
                 case SEP_COLON:
                     checkExpectToken(tokenType, expectToken);
-                    expectToken = NULL_TOKEN | NUMBER_TOKEN | BOOLEAN_TOKEN | STRING_TOKEN
-                            | BEGIN_OBJECT_TOKEN | BEGIN_ARRAY_TOKEN;
+                    expectToken = TokenType.calcCode(NULL, NUMBER, BOOLEAN,
+                            STRING, BEGIN_OBJECT, BEGIN_ARRAY);
                     break;
                 case SEP_COMMA:
                     checkExpectToken(tokenType, expectToken);
-                    expectToken = STRING_TOKEN;
+                    expectToken = TokenType.calcCode(STRING);
                     break;
                 default:
                     throw new JSONParseException("Unexpected Token.");
@@ -107,12 +99,12 @@ public class JSONParser {
 
     @NotNull
     public JSONArray parseJSONArray(@NotNull TokenList tokens) {
-        if (tokens.next().type() != TokenType.BEGIN_ARRAY) {
+        if (tokens.next().type() != BEGIN_ARRAY) {
             throw new JSONParseException("Parse error, invalid Token.");
         }
 
-        int expectToken = BEGIN_ARRAY_TOKEN | END_ARRAY_TOKEN | BEGIN_OBJECT_TOKEN | NULL_TOKEN
-                | NUMBER_TOKEN | BOOLEAN_TOKEN | STRING_TOKEN;
+        int expectToken = TokenType.calcCode(BEGIN_ARRAY, END_ARRAY, BEGIN_OBJECT,
+                NULL, NUMBER, BOOLEAN, STRING);
         JSONArray array = new JSONArray();
         while (tokens.hasMore()) {
             Token token = tokens.next();
@@ -123,13 +115,13 @@ public class JSONParser {
                     checkExpectToken(tokenType, expectToken);
                     tokens.back();
                     array.add(parseJSONObject(tokens));
-                    expectToken = SEP_COMMA_TOKEN | END_ARRAY_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
                     break;
                 case BEGIN_ARRAY:
                     checkExpectToken(tokenType, expectToken);
                     tokens.back();
                     array.add(parseJSONArray(tokens));
-                    expectToken = SEP_COMMA_TOKEN | END_ARRAY_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
                     break;
                 case END_ARRAY:
                 case END_DOCUMENT:
@@ -138,7 +130,7 @@ public class JSONParser {
                 case NULL:
                     checkExpectToken(tokenType, expectToken);
                     array.add(null);
-                    expectToken = SEP_COMMA_TOKEN | END_ARRAY_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
                     break;
                 case NUMBER:
                     checkExpectToken(tokenType, expectToken);
@@ -152,22 +144,22 @@ public class JSONParser {
                             array.add((int) num);
                         }
                     }
-                    expectToken = SEP_COMMA_TOKEN | END_ARRAY_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
                     break;
                 case BOOLEAN:
                     checkExpectToken(tokenType, expectToken);
                     array.add(Boolean.valueOf(tokenValue));
-                    expectToken = SEP_COMMA_TOKEN | END_ARRAY_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
                     break;
                 case STRING:
                     checkExpectToken(tokenType, expectToken);
                     array.add(tokenValue);
-                    expectToken = SEP_COMMA_TOKEN | END_ARRAY_TOKEN;
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
                     break;
                 case SEP_COMMA:
                     checkExpectToken(tokenType, expectToken);
-                    expectToken = STRING_TOKEN | NULL_TOKEN | NUMBER_TOKEN | BOOLEAN_TOKEN
-                            | BEGIN_ARRAY_TOKEN | BEGIN_OBJECT_TOKEN;
+                    expectToken = TokenType.calcCode(STRING, NULL, NUMBER, BOOLEAN,
+                            BEGIN_ARRAY, BEGIN_OBJECT);
                     break;
                 default:
                     throw new JSONParseException("Unexpected Token.");
