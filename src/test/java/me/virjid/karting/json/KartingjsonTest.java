@@ -69,6 +69,7 @@ public class KartingjsonTest {
             reader.lines().forEach(data::append);
         } catch (IOException e) {
             e.printStackTrace();
-        }return data.toString();
+        }
+        return data.toString();
     }
 }

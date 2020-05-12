@@ -136,10 +136,92 @@ public class JSONArray implements List<Object>, Serializable {
         return list.subList(fromIndex, toIndex);
     }
 
+
+    public String getString(int index) {
+        Object obj = list.get(index);
+        if (!(obj instanceof String)) {
+            throw new JSONTypeException("Type of value is not String");
+        }
+
+        return (String) obj;
+    }
+
+    public Long getLong(int index) {
+        Object obj = list.get(index);
+        if (!(obj instanceof Long)) {
+            throw new JSONTypeException("Type of value is not Long");
+        }
+
+        return (Long) obj;
+    }
+
+    public Integer getInteger(int index) {
+        Object obj = list.get(index);
+        if (!(obj instanceof Integer)) {
+            throw new JSONTypeException("Type of value is not Integer");
+        }
+
+        return (Integer) obj;
+    }
+
+    public Short getShort(int index) {
+        Object obj = list.get(index);
+        if (!(obj instanceof Short)) {
+            throw new JSONTypeException("Type of value is not Short");
+        }
+
+        return (Short) obj;
+    }
+
+    public Byte getByte(int index) {
+        Object obj = list.get(index);
+        if (!(obj instanceof Byte)) {
+            throw new JSONTypeException("Type of value is not Byte");
+        }
+
+        return (Byte) obj;
+    }
+
+    public Character getCharacter(int index) {
+        Object obj = list.get(index);
+        if (!(obj instanceof Character)) {
+            throw new JSONTypeException("Type of value is not Character");
+        }
+
+        return (Character) obj;
+    }
+
+    public Double getDouble(int index) {
+        Object obj = list.get(index);
+        if (!(obj instanceof Double)) {
+            throw new JSONTypeException("Type of value is not Double");
+        }
+
+        return (Double) obj;
+    }
+
+    public Float getFloat(int index) {
+        Object obj = list.get(index);
+        if (!(obj instanceof Float)) {
+            throw new JSONTypeException("Type of value is not Float");
+        }
+
+        return (Float) obj;
+    }
+
+    public Boolean getBoolean(int index) {
+        Object obj = list.get(index);
+        if (!(obj instanceof Boolean)) {
+            throw new JSONTypeException("Type of value is not Boolean");
+        }
+
+        return (Boolean) obj;
+    }
+
     public JSONObject getJSONObject(int index) {
         Object obj = list.get(index);
         if (!(obj instanceof JSONObject)) {
-            throw new JSONTypeException("Type of value is not JsonObject");
+            throw new JSONTypeException("Type of value is not JSONObject");
         }
 
         return (JSONObject) obj;
@@ -148,7 +230,7 @@ public class JSONArray implements List<Object>, Serializable {
     public JSONArray getJSONArray(int index) {
         Object obj = list.get(index);
         if (!(obj instanceof JSONArray)) {
-            throw new JSONTypeException("Type of value is not JsonArray");
+            throw new JSONTypeException("Type of value is not JSONArray");
         }
 
         return (JSONArray) obj;
