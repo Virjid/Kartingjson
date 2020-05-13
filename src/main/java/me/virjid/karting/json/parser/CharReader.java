@@ -9,7 +9,7 @@ import java.io.Reader;
  * @author Virjid
  */
 public class CharReader {
-    public static final char EOF = (char) -1;
+    public static final char EOF = (char) -1; // 65535
 
     private Reader reader;
     private char[] buffer;

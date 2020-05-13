@@ -134,7 +134,7 @@ public class Tokenizer {
             }
 
             // the end of parsing string
-            else if (ch == quote) {
+            else if (ch == quote || ch == CharReader.EOF) {
                 return new Token(TokenType.STRING, sb.toString());
             }
 
@@ -201,7 +201,7 @@ public class Tokenizer {
     }
 
     private boolean isEscape(char ch) {
-        return (ch == '"' || ch == '\\' || ch == 'u' || ch == 'r'
+        return (ch == '"' || ch == '\'' || ch == '\\' || ch == 'u' || ch == 'r'
                 || ch == 'n' || ch == 'b' || ch == 't' || ch == 'f');
     }
 
@@ -271,5 +271,4 @@ public class Tokenizer {
 
         return sb.toString();
     }
-
 }

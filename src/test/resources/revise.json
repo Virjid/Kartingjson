@@ -2,5 +2,6 @@
   "number1": .1,
   "number2": -.8,
   "null": undefined,
-  'hello': 'world"'
+  'hello': 'world"',
+  'hi': 'virjid\''
 }

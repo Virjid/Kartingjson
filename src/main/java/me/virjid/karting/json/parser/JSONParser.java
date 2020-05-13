@@ -5,6 +5,8 @@ import me.virjid.karting.json.model.JSONArray;
 import me.virjid.karting.json.model.JSONObject;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 import static me.virjid.karting.json.parser.TokenType.*;
 
 /**
@@ -18,7 +20,7 @@ public class JSONParser {
             throw new JSONParseException("Parse error, invalid Token.");
         }
 
-        JSONObject JSONObject = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         int expectToken = TokenType.calcCode(STRING, END_OBJECT);
         String key = null;
         Object value;
@@ -30,41 +32,41 @@ public class JSONParser {
                 case BEGIN_OBJECT:
                     checkExpectToken(tokenType, expectToken);
                     tokens.back();
-                    JSONObject.put(key, parseJSONObject(tokens));
+                    jsonObject.put(key, parseJSONObject(tokens));
                     expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case END_OBJECT:
                 case END_DOCUMENT:
                     checkExpectToken(tokenType, expectToken);
-                    return JSONObject;
+                    return jsonObject;
                 case BEGIN_ARRAY:
                     checkExpectToken(tokenType, expectToken);
                     tokens.back();
-                    JSONObject.put(key, parseJSONArray(tokens));
+                    jsonObject.put(key, parseJSONArray(tokens));
                     expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case NULL:
                     checkExpectToken(tokenType, expectToken);
-                    JSONObject.put(key, null);
+                    jsonObject.put(key, null);
                     expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case NUMBER:
                     checkExpectToken(tokenType, expectToken);
                     if (tokenValue.contains(".") || tokenValue.contains("e") || tokenValue.contains("E")) {
-                        JSONObject.put(key, Double.valueOf(tokenValue));
+                        jsonObject.put(key, Double.valueOf(tokenValue));
                     } else {
                         long num = Long.parseLong(tokenValue);
                         if (num > Integer.MAX_VALUE || num < Integer.MIN_VALUE) {
-                            JSONObject.put(key, num);
+                            jsonObject.put(key, num);
                         } else {
-                            JSONObject.put(key, (int) num);
+                            jsonObject.put(key, (int) num);
                         }
                     }
                     expectToken =TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case BOOLEAN:
                     checkExpectToken(tokenType, expectToken);
-                    JSONObject.put(key, Boolean.valueOf(token.value()));
+                    jsonObject.put(key, Boolean.valueOf(token.value()));
                     expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     break;
                 case STRING:
@@ -73,7 +75,7 @@ public class JSONParser {
 
                     if (preToken.type() == SEP_COLON) {
                         value = token.value();
-                        JSONObject.put(key, value);
+                        jsonObject.put(key, value);
                         expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
                     } else {
                         key = token.value();
