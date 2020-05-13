@@ -1,6 +1,5 @@
 package me.virjid.karting.json.model;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import me.virjid.karting.json.exception.JSONTypeException;
 import me.virjid.karting.json.util.JSON;
 import org.jetbrains.annotations.NotNull;

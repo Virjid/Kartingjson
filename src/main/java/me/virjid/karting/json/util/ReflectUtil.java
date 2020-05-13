@@ -1,5 +1,6 @@
 package me.virjid.karting.json.util;
 
+import me.virjid.karting.json.annotation.Property;
 import me.virjid.karting.json.annotation.TimeFormat;
 import me.virjid.karting.json.annotation.Transient;
 import org.jetbrains.annotations.NotNull;
@@ -70,7 +71,7 @@ public class ReflectUtil {
                     continue;
                 }
 
-                // 获取Transient注解
+                // Ignore the field
                 if (field.getAnnotation(Transient.class) != null) {
                     continue;
                 }
@@ -80,6 +81,11 @@ public class ReflectUtil {
 
                 String key = field.getName();
                 Object val = field.get(obj);
+
+                Property property = field.getAnnotation(Property.class);
+                if (property != null && !"".equals(property.value())) {
+                    key = property.value();
+                }
 
                 // 处理时间类型
                 if (isDateTime(val)) {
@@ -122,7 +128,8 @@ public class ReflectUtil {
             }
 
             if (type == int.class) {
-                return Arrays.stream((int[]) obj).boxed().collect(Collectors.toList());
+                return Arrays.stream((int[]) obj)
+                        .boxed().collect(Collectors.toList());
             }
 
             if (type == boolean.class) {

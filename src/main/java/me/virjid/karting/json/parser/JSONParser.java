@@ -22,7 +22,7 @@ public class JSONParser {
         int expectToken = TokenType.calcCode(STRING, END_OBJECT);
         String key = null;
         Object value;
-        while (tokens.hasMore()) {
+        while (tokens.hasNext()) {
             Token token = tokens.next();
             TokenType tokenType = token.type();
             String tokenValue = token.value();
@@ -106,7 +106,7 @@ public class JSONParser {
         int expectToken = TokenType.calcCode(BEGIN_ARRAY, END_ARRAY, BEGIN_OBJECT,
                 NULL, NUMBER, BOOLEAN, STRING);
         JSONArray array = new JSONArray();
-        while (tokens.hasMore()) {
+        while (tokens.hasNext()) {
             Token token = tokens.next();
             TokenType tokenType = token.type();
             String tokenValue   = token.value();

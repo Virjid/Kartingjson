@@ -13,7 +13,7 @@ public class TokenList implements List<Token> {
     private int pos = 0;
 
     public Token peek() {
-        return hasMore() ? tokens.get(pos) : null;
+        return hasNext() ? tokens.get(pos) : null;
     }
 
     public Token peekPrevious() {
@@ -28,7 +28,7 @@ public class TokenList implements List<Token> {
         pos = Math.max(0, --pos);
     }
 
-    public boolean hasMore() {
+    public boolean hasNext() {
         return pos < tokens.size();
     }
 
