@@ -18,12 +18,14 @@ public class KartingjsonTest {
     private static String array_json;
     private static String object_json;
     private static String revise_json;
+    private static String unicode_json;
 
     @BeforeAll
     public static void readData() {
-        array_json  = readResource("array.json");
-        object_json = readResource("object.json");
-        revise_json = readResource("revise.json");
+        array_json   = readResource("array.json");
+        object_json  = readResource("object.json");
+        revise_json  = readResource("revise.json");
+        unicode_json = readResource("unicode.json");
     }
 
     // 简单地修正JSON字符串
@@ -54,6 +56,14 @@ public class KartingjsonTest {
     public void objectToJSONObject() {
         TestBlogPostEntity post = new TestBlogPostEntity();
         JSONObject obj = JSON.toJSONObject(post);
+        System.out.println(obj.toString(2));
+    }
+
+    // unicode编码转义测试
+    @Test
+    public void unicodeTest() {
+        JSONObject obj = JSON.parseJSONObject(unicode_json);
+        System.out.println(obj.getString("message"));
         System.out.println(obj.toString(2));
     }
 

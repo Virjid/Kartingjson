@@ -1,4 +1,6 @@
 {
-  "number": .1,
-  "null": undefined
+  "number1": .1,
+  "number2": -.8,
+  "null": undefined,
+  'hello': 'world"'
 }

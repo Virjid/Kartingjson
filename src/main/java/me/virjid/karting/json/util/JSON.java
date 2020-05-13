@@ -80,7 +80,8 @@ public class JSON {
             } else if (val instanceof JSONArray) {
                 sb.append(toJSONString((JSONArray) val, depth, indent));
             } else if (val instanceof String) {
-                sb.append('"').append(val).append('"');
+                String handleStr = handleString((String) val);
+                sb.append('"').append(handleStr).append('"');
             } else {
                 sb.append(val);
             }
@@ -115,7 +116,8 @@ public class JSON {
             } else if (item instanceof JSONArray) {
                 sb.append(toJSONString((JSONArray) item, depth, indent));
             } else if (item instanceof String) {
-                sb.append(indentStr).append('"').append(item).append('"');
+                String handleStr = handleString((String) item);
+                sb.append(indentStr).append('"').append(handleStr).append('"');
             } else {
                 sb.append(indentStr).append(item);
             }
@@ -127,6 +129,20 @@ public class JSON {
         depth--;
         sb.append(calcIndent(depth, indent)).append(']');
 
+        return sb.toString();
+    }
+
+    // 字符串格式化时，有些字符需要被转义
+    @NotNull
+    private static String handleString(@NotNull String item) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0, size = item.length(); i < size; i++) {
+            char c = item.charAt(i);
+
+            if (c == '"') sb.append("\\\"");
+            else if (c == '\\') sb.append("\\\\");
+            else sb.append(c);
+        }
         return sb.toString();
     }
 
@@ -177,6 +193,10 @@ public class JSON {
             throw new JSONTypeException("Type of value is not JSONObject");
         }
 
+        if (obj instanceof JSONObject) {
+            return (JSONObject) obj;
+        }
+
         JSONObject model = new JSONObject();
         toJSONObject(obj, model);
         return model;
@@ -187,6 +207,10 @@ public class JSON {
 
         if (!ReflectUtil.isList(obj)) {
             throw new JSONTypeException("Type of value is not JSONArray");
+        }
+
+        if (obj instanceof JSONArray) {
+            return (JSONArray) obj;
         }
 
         JSONArray array = new JSONArray();
