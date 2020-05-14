@@ -25,6 +25,10 @@ public class ReflectUtil {
         return obj instanceof List || type.isArray();
     }
 
+    public static boolean isList(Class<?> type) {
+        return List.class.isAssignableFrom(type) || type.isArray();
+    }
+
     // 是否为一个Map
     public static boolean isMap(Object obj) {
         if (obj == null) return false;
@@ -34,6 +38,10 @@ public class ReflectUtil {
 
     public static boolean isDateTime(Object obj) {
         return obj instanceof TemporalAccessor;
+    }
+
+    public static boolean isDateTime(@NotNull Class<?> type) {
+        return TemporalAccessor.class.isAssignableFrom(type);
     }
 
     // 是否为包装类型
@@ -49,6 +57,10 @@ public class ReflectUtil {
         if (val == null) return true;
 
         Class<?> type = val.getClass();
+        return type.isPrimitive() || isWrapper(type) || type == String.class;
+    }
+
+    public static boolean isNotJSONObject(@NotNull Class<?> type) {
         return type.isPrimitive() || isWrapper(type) || type == String.class;
     }
 

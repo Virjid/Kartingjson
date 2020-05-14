@@ -1,6 +1,8 @@
 package me.virjid.karting.json;
 
+import me.virjid.karting.json.entity.TestBlogAuthorEntity;
 import me.virjid.karting.json.entity.TestBlogPostEntity;
+import me.virjid.karting.json.entity.TestSimpleEntity;
 import me.virjid.karting.json.model.JSONArray;
 import me.virjid.karting.json.model.JSONObject;
 import me.virjid.karting.json.util.JSON;
@@ -65,6 +67,23 @@ public class KartingjsonTest {
         JSONObject obj = JSON.parseJSONObject(unicode_json);
         System.out.println(obj.getString("message"));
         System.out.println(obj.toString(2));
+    }
+
+    @Test
+    public void toObjectTest() throws Exception {
+        TestBlogPostEntity post = new TestBlogPostEntity();
+        JSONObject obj = JSON.toJSONObject(post);
+        System.out.println(obj.toString(4));
+        TestBlogPostEntity post2 = new TestBlogPostEntity();
+        obj.toObject(post2);
+        System.out.println(post2);
+    }
+
+    @Test
+    public void parseObjectTest() {
+        String json = "{'hello': 'world', 'number': 3e4, 'list': ['1', 's']}";
+        TestSimpleEntity entity = JSON.parseObject(json, TestSimpleEntity.class);
+        System.out.println(entity);
     }
 
 

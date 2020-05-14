@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -44,5 +45,19 @@ public class TestBlogAuthorEntity implements Serializable {
         everySignInTime[0] = LocalDateTime.now();
         everySignInTime[1] = LocalDateTime.now();
         everySignInTime[2] = LocalDateTime.now();
+    }
+
+    @Override
+    public String toString() {
+        return "TestBlogAuthorEntity{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", birthday=" + birthday +
+                ", signOnDate=" + signOnDate +
+                ", signOnTime=" + signOnTime +
+                ", lastSignInAt=" + lastSignInAt +
+                ", friends=" + friends +
+                ", everySignInTime=" + Arrays.toString(everySignInTime) +
+                '}';
     }
 }

@@ -6,7 +6,7 @@ import me.virjid.karting.json.model.JSONObject;
 import me.virjid.karting.json.parser.CharReader;
 import me.virjid.karting.json.parser.JSONParser;
 import me.virjid.karting.json.parser.TokenList;
-import me.virjid.karting.json.parser.Tokenizer;
+import me.virjid.karting.json.parser.Lexer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,7 +24,7 @@ public class JSON {
     private static final char SPACE_CHAR = ' ';
 
     private static final JSONParser parser   = new JSONParser();
-    private static final Tokenizer tokenizer = new Tokenizer();
+    private static final Lexer tokenizer = new Lexer();
 
     // ----------------------------------------------
     // json object or json array to string
@@ -160,6 +160,17 @@ public class JSON {
     // ----------------------------------------------
     // string to json object or json array
     // ----------------------------------------------
+    @NotNull
+    public static <T> T parseObject(String source, Class<T> type) {
+        try {
+            CharReader reader   = new CharReader(new StringReader(source));
+            TokenList tokenList = tokenizer.tokenize(reader);
+            return parser.parseObject(tokenList, type);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @NotNull
     public static JSONObject parseJSONObject(String source) {
         try {

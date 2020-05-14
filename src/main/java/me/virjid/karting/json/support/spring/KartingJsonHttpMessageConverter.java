@@ -1,6 +1,7 @@
 package me.virjid.karting.json.support.spring;
 
 import me.virjid.karting.json.model.JSONArray;
+import me.virjid.karting.json.model.JSONObject;
 import me.virjid.karting.json.util.JSON;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpInputMessage;
@@ -12,7 +13,6 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -39,9 +39,11 @@ public class KartingJsonHttpMessageConverter extends AbstractHttpMessageConverte
 
         if (type == JSONArray.class) {
             return JSON.parseJSONArray(json);
-        } else {
+        } else if (type == JSONObject.class){
             return JSON.parseJSONObject(json);
         }
+
+        return null;
     }
 
     @Override

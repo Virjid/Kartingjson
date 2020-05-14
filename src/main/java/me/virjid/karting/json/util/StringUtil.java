@@ -1,6 +1,7 @@
 package me.virjid.karting.json.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,5 +44,35 @@ public class StringUtil {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
 
         return formatter.format(obj);
+    }
+
+    @Nullable
+    public static TemporalAccessor stringToDateTime(String source, Class<?> type) {
+        if (type == LocalDateTime.class) {
+            return LocalDateTime.parse(source, DATE_TIME_FORMATTER);
+        }
+
+        if (type == LocalDate.class) {
+            return LocalDate.parse(source, DATE_FORMAT);
+        }
+
+        if (type == LocalTime.class) {
+            return LocalTime.parse(source, TIME_FORMATTER);
+        }
+
+        return null;
+    }
+
+    @NotNull
+    public static TemporalAccessor stringToDateTime(String source, Class<?> type,  String pattern) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+
+        if (type == LocalDateTime.class) {
+            return LocalDateTime.parse(source, formatter);
+        } else if (type == LocalDate.class) {
+            return LocalDate.parse(source, formatter);
+        } else {
+            return LocalTime.parse(source, formatter);
+        }
     }
 }

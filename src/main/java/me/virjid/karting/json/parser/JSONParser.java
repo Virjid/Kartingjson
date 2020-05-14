@@ -5,7 +5,10 @@ import me.virjid.karting.json.model.JSONArray;
 import me.virjid.karting.json.model.JSONObject;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
+import java.util.List;
 
 import static me.virjid.karting.json.parser.TokenType.*;
 
@@ -13,6 +16,114 @@ import static me.virjid.karting.json.parser.TokenType.*;
  * @author Virjid
  */
 public class JSONParser {
+
+    public <T> T parseObject(@NotNull TokenList tokens, Class<T> type) throws Exception {
+        if (tokens.next().type() != BEGIN_OBJECT) {
+            throw new JSONParseException("Parse error, invalid Token.");
+        }
+
+        T obj = type.newInstance();
+
+        int expectToken = TokenType.calcCode(STRING, END_OBJECT);
+
+        String key  = null;
+        Field field = null;
+
+        while (tokens.hasNext()) {
+            Token token = tokens.next();
+            TokenType tokenType = token.type();
+            String tokenValue = token.value();
+            if (key != null) {
+                field = type.getDeclaredField(key);
+                field.setAccessible(true);
+            }
+            switch (tokenType) {
+                case BEGIN_OBJECT:
+                    checkExpectToken(tokenType, expectToken);
+                    tokens.back();
+                    field.set(obj, parseObject(tokens, field.getType()));
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case END_OBJECT:
+                case END_DOCUMENT:
+                    checkExpectToken(tokenType, expectToken);
+                    return obj;
+                case BEGIN_ARRAY:
+                    checkExpectToken(tokenType, expectToken);
+                    tokens.back();
+
+                    if (field.getType().isArray()) {
+                        field.set(obj, parseArray(tokens, field.getType(),
+                                field.getType().getComponentType()));
+                    } else {
+                        field.set(obj, parseArray(tokens, field.getType(),
+                                (Class<?>) ((ParameterizedType) field.getGenericType())
+                                        .getActualTypeArguments()[0]));
+                    }
+
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case NULL:
+                    checkExpectToken(tokenType, expectToken);
+                    field.set(obj, null);
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case NUMBER:
+                    checkExpectToken(tokenType, expectToken);
+                    Class<?> fieldType = field.getType();
+                    if (fieldType == Integer.class || fieldType == int.class) {
+                        field.set(obj, Integer.valueOf(tokenValue));
+                    } else if (fieldType == Double.class || fieldType == double.class) {
+                        field.set(obj, Double.valueOf(tokenValue));
+                    } else if (fieldType == Short.class || fieldType == short.class) {
+                        field.set(obj, Short.valueOf(tokenValue));
+                    } else if (fieldType == Long.class || fieldType == long.class) {
+                        field.set(obj, Long.valueOf(tokenValue));
+                    } else if (fieldType == Byte.class || fieldType == byte.class) {
+                        field.set(obj, Byte.valueOf(tokenValue));
+                    } else if (fieldType == Float.class || fieldType == float.class) {
+                        field.set(obj, Float.valueOf(tokenValue));
+                    }
+
+                    expectToken =TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case BOOLEAN:
+                    checkExpectToken(tokenType, expectToken);
+                    field.set(obj, Boolean.valueOf(tokenValue));
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case STRING:
+                    checkExpectToken(tokenType, expectToken);
+                    Token preToken = tokens.peekPrevious();
+
+                    if (preToken.type() == SEP_COLON) {
+                        field.set(obj, tokenValue);
+                        expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    } else {
+                        key = token.value();
+                        expectToken = TokenType.calcCode(SEP_COLON);
+                    }
+                    break;
+                case SEP_COLON:
+                    checkExpectToken(tokenType, expectToken);
+                    expectToken = TokenType.calcCode(NULL, NUMBER, BOOLEAN,
+                            STRING, BEGIN_OBJECT, BEGIN_ARRAY);
+                    break;
+                case SEP_COMMA:
+                    checkExpectToken(tokenType, expectToken);
+                    expectToken = TokenType.calcCode(STRING);
+                    break;
+                default:
+                    throw new JSONParseException("Unexpected Token.");
+            }
+        }
+
+        throw new JSONParseException("Parse error, invalid Token.");
+    }
+
+    public <T> List<T> parseArray(@NotNull TokenList tokens, Class<?> type, Class<T> componentType) throws Exception {
+        throw new JSONParseException("Has not supported the type => " + type);
+    }
 
     @NotNull
     public JSONObject parseJSONObject(@NotNull TokenList tokens) {

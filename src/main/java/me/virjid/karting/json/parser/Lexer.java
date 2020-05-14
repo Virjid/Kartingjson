@@ -9,7 +9,7 @@ import java.io.IOException;
 /**
  * @author Virjid
  */
-public class Tokenizer {
+public class Lexer {
     private CharReader reader;
 
     public TokenList tokenize(CharReader reader) throws IOException {

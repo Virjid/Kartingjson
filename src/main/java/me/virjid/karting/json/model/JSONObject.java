@@ -1,14 +1,19 @@
 package me.virjid.karting.json.model;
 
+import me.virjid.karting.json.annotation.TimeFormat;
 import me.virjid.karting.json.exception.JSONTypeException;
 import me.virjid.karting.json.util.JSON;
+import me.virjid.karting.json.util.ReflectUtil;
+import me.virjid.karting.json.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * @author Virjid
@@ -191,5 +196,57 @@ public class JSONObject implements Map<String, Object>, Serializable {
 
     public String toString(int indent) {
         return JSON.toJSONString(this, indent);
+    }
+
+    public void toObject(@NotNull Object o) throws Exception {
+        Class<?> type = o.getClass();
+        Field[] fields = type.getDeclaredFields();
+
+        for (Field field : fields) {
+            int mod = field.getModifiers();
+            if (Modifier.isFinal(mod)) continue;
+
+            field.setAccessible(true);
+            String name = field.getName();
+            Object val  = get(name);
+            Class<?> fieldType = field.getType();
+
+            if (ReflectUtil.isNotJSONObject(fieldType)) {
+                field.set(o, val);
+            }
+            else if (ReflectUtil.isList(fieldType)) {
+                JSONArray array = (JSONArray) val;
+                List<Object> list = new ArrayList<>(array.size());
+
+                if (fieldType.isArray()) {
+                    array.toList(list, fieldType.getComponentType());
+                    Object[] a = (Object[]) Array.newInstance(fieldType.getComponentType(), array.size());
+                    for (int i = 0, size = array.size(); i < size; i++) {
+                        a[i] = list.get(i);
+                    }
+                    field.set(o, a);
+                } else {
+                    array.toList(list, (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0]);
+                    field.set(o, list);
+                }
+            }
+            else if (ReflectUtil.isDateTime(fieldType)) {
+                TimeFormat format = field.getAnnotation(TimeFormat.class);
+                if (format == null) {
+                    field.set(o, StringUtil.stringToDateTime((String) val, fieldType));
+                } else {
+                    String pattern = format.value();
+                    if ("".equals(pattern)) {
+                        field.set(o, StringUtil.stringToDateTime((String) val, fieldType));
+                    } else {
+                        field.set(o, StringUtil.stringToDateTime((String) val, fieldType, pattern));
+                    }
+                }
+            }
+            else {
+                Object subObj = fieldType.newInstance();
+                ((JSONObject) val).toObject(subObj);
+            }
+        }
     }
 }

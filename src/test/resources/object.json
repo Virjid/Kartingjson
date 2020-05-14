@@ -1,10 +1,5 @@
 {
-  "number1": 0.1,
-  "number2": 3.5e7,
-  "number3": 3.1415926e+1,
-  "number4": 23.1E-4,
-  "number5": 3.5E14,
-  "number6": 3.5e5,
+  "number": 0.1,
   "null": null,
-  "hello": "\"world\""
+  "hello": "world"
 }

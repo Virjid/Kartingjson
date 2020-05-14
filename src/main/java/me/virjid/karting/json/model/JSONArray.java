@@ -2,6 +2,8 @@ package me.virjid.karting.json.model;
 
 import me.virjid.karting.json.exception.JSONTypeException;
 import me.virjid.karting.json.util.JSON;
+import me.virjid.karting.json.util.ReflectUtil;
+import me.virjid.karting.json.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
@@ -243,5 +245,20 @@ public class JSONArray implements List<Object>, Serializable {
 
     public String toString(int indent) {
         return JSON.toJSONString(this, indent);
+    }
+
+    public void toList(List<Object> list, Class<?> itemType) throws Exception {
+        for (Object item : this) {
+            if (ReflectUtil.isNotJSONObject(itemType)) {
+                list.add(item);
+            }
+            else if (ReflectUtil.isDateTime(itemType)) {
+                list.add(StringUtil.stringToDateTime((String) item, itemType));
+            }
+            else {
+                Object model = item.getClass().newInstance();
+                ((JSONObject) item).toObject(model);
+            }
+        }
     }
 }

@@ -16,14 +16,26 @@ public class TestBlogPostEntity implements Serializable {
 
     private String title = "Hello world";
 
-    @Property("author_entity")
+//    @Property("author_entity")
     private TestBlogAuthorEntity author = new TestBlogAuthorEntity();
 
-    @Property("starts")
+//    @Property("stars")
     private int star = 9999;
 
     private LocalDateTime createAt = LocalDateTime.now();
 
-    @Property("update_at")
+//    @Property("update_at")
     private LocalDateTime updateAt = LocalDateTime.now();
+
+    @Override
+    public String toString() {
+        return "TestBlogPostEntity{" +
+                "no='" + no + '\'' +
+                ", title='" + title + '\'' +
+                ", author=" + author +
+                ", star=" + star +
+                ", createAt=" + createAt +
+                ", updateAt=" + updateAt +
+                '}';
+    }
 }
